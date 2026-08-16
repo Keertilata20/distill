@@ -18,48 +18,6 @@ vercel dev
 
 This serves the site with the API function live, usually at `http://localhost:3000`.
 
-## Deploying (GitHub + Vercel)
-
-1. **Push to GitHub**
-   ```
-   git init
-   git add .
-   git commit -m "Initial commit"
-   git remote add origin https://github.com/<you>/<repo>.git
-   git push -u origin main
-   ```
-   `.env` is already excluded via `.gitignore` — double check it never gets
-   committed. `.env.example` (no real key) is safe to commit.
-
-2. **Import into Vercel**
-   Go to [vercel.com/new](https://vercel.com/new), sign in with GitHub, and
-   import the repo. Vercel auto-detects the static files at the root and
-   the `/api` folder as serverless functions — no build configuration needed.
-
-3. **Add your API key**
-   In the Vercel project → Settings → Environment Variables, add:
-   ```
-   ANTHROPIC_API_KEY = sk-ant-...
-   ```
-   (from [console.anthropic.com](https://console.anthropic.com)). Redeploy
-   after adding it if the first deploy already ran.
-
-4. **Done** — Vercel gives you a live URL. Every "Distill it" call now goes
-   through your own `/api/distill` function, which is the only thing that
-   ever sees your real API key.
-
-**Before you share the link:** `/api/distill` is a public endpoint with no
-login in front of it. Anyone who finds your deployed URL can call it and
-spend your API credits — the function caps prompt length and output tokens
-per request, but that only bounds cost *per call*, not total volume. For a
-personal or demo project this is usually fine; if you're sharing the link
-widely, consider adding simple auth (e.g. a shared-secret header checked in
-`api/distill.js`) or Vercel's access-control features before it's public.
-
-*(Netlify works too, with the same idea — static site + one serverless
-function holding the key — just under `netlify/functions/` instead of
-`/api` with slightly different handler syntax.)*
-
 ## Structure
 
 ```
