@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Distill — documents, distilled</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="top">
+    <div class="brand">
+      <svg width="24" height="30" viewBox="0 0 40 52"><path d="M20 2 C20 2 4 24 4 34 C4 43.9 11.2 50 20 50 C28.8 50 36 43.9 36 34 C36 24 20 2 20 2 Z" fill="#FF6B5D"/></svg>
+      <h1>Distill</h1>
+    </div>
+    <span class="tag">documents, distilled</span>
+  </div>
+
+  <!-- ============ HOME VIEW ============ -->
+  <div class="view active" id="homeView">
+    <div class="panel">
+      <p class="panel-label">Bring a document</p>
+      <div class="dropzone" id="dropzone">
+        <strong>Drop a file here</strong>
+        .txt, .md, .pdf, or .docx — or click to browse
+        <input type="file" id="fileInput" accept=".txt,.md,.pdf,.docx">
+      </div>
+      <div class="or-row">or paste text</div>
+      <textarea id="pasteInput" placeholder="Paste an article, paper, report, or reference sheet…"></textarea>
+      <div class="title-row">
+        <input id="titleInput" type="text" placeholder="Name this document (optional)">
+        <button class="btn-accent" id="startBtn">Distill it</button>
+      </div>
+      <div class="upload-status" id="uploadStatus"></div>
+    </div>
+
+    <p class="panel-label" style="color:#F3ECF9; opacity:0.85;">Your documents</p>
+    <div class="lib-grid" id="libGrid"></div>
+    <p class="empty-note" id="emptyNote">Nothing yet — upload or paste something above to get started.</p>
+  </div>
+
+  <!-- ============ DOCUMENT VIEW ============ -->
+  <div class="view" id="docView">
+    <div class="docbar">
+      <button class="btn-back" id="backBtn">← Documents</button>
+      <div class="doc-heading">
+        <h2 id="docTitle">Untitled</h2>
+        <p class="doc-meta" id="docMeta"></p>
+        <p class="doc-detect" id="docDetect" style="display:none;"></p>
+        <p class="doc-caution" id="docCaution" style="display:none;">⚠ Dense math/chemical notation detected — extraction from PDFs can misorder symbols. Please verify formulas against the original text.</p>
+      </div>
+    </div>
+
+    <div class="tabbar" id="tabBar">
+      <button class="tab active" data-key="tldr">TL;DR</button>
+      <button class="tab" data-key="keyPoints">Key Points</button>
+      <button class="tab" data-key="abstract" id="abstractTabBtn">Summary</button>
+      <button class="tab" data-key="breakdown" id="breakdownTabBtn">Breakdown</button>
+    </div>
+
+    <div class="content-card">
+      <div class="content-toolbar">
+        <span class="content-label" id="contentLabel">TL;DR</span>
+        <button class="copy-btn" id="copyBtn">Copy</button>
+      </div>
+      <div class="content-body" id="contentBody"></div>
+    </div>
+    <p class="disclaimer">Summaries condense the original — for exact figures, formulas, quotes, or exam-safe detail, check "Show original text" below.</p>
+
+    <div class="original-toggle-row">
+      <button class="btn-toggle" id="originalToggleBtn">Show original text</button>
+    </div>
+    <div class="original-box" id="originalBox" style="display:none;">
+      <div class="fm-block" id="fmBlock" style="display:none;">
+        <p class="fm-title" id="fmTitleText"></p>
+        <p class="fm-authors" id="fmAuthorsText"></p>
+      </div>
+      <div class="original-text" id="originalText"></div>
+    </div>
+  </div>
+
+</div>
+
+<!--
+  Script load order matters here: classic <script> tags execute top to
+  bottom, and later files call functions defined in earlier ones. app.js
+  must be first (it creates window.App), main.js must be last (it's the
+  only file that runs anything automatically). See README.md for the
+  full dependency explanation.
+-->
+<script src="js/app.js"></script>
+<script src="js/textAnalysis.js"></script>
+<script src="js/fileExtract.js"></script>
+<script src="js/claudeApi.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/documents.js"></script>
+<script src="js/libraryView.js"></script>
+<script src="js/documentView.js"></script>
+<script src="js/uploadView.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
