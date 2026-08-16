@@ -1,0 +1,9 @@
+{
+  "name": "distill",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A calm document summary tool — TL;DR, key points, abstract, and adaptive breakdown views.",
+  "engines": {
+    "node": ">=18"
+  }
+}

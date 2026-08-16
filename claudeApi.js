@@ -1,28 +1,21 @@
 /**
  * claudeApi.js
  * ------------
- * Everything that talks to the Claude API: the raw call wrapper, and the
- * prompt construction for each of the four format tabs.
+ * Everything that talks to the summary backend: the raw call wrapper, and
+ * the prompt construction for each of the four format tabs.
  *
- * NOTE: this fetches https://api.anthropic.com/v1/messages directly from
- * the browser with no API key attached. That only works when this page is
- * rendered inside Claude.ai's artifact environment, which proxies the
- * request. Opening index.html outside that environment (e.g. hosted
- * elsewhere, or just double-clicked) will cause every summary call to fail
- * — there's no key to attach, and api.anthropic.com doesn't allow
- * unauthenticated cross-origin browser requests. See README.md.
+ * This calls /api/distill — our own serverless function (see api/distill.js)
+ * — rather than api.anthropic.com directly. The browser can never safely
+ * hold a real API key, so the key lives server-side and this file only
+ * ever talks to our own domain.
  */
 
 async function callClaude(prompt, maxTokens){
   try{
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
+    const response = await fetch("/api/distill", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: App.config.MODEL,
-        max_tokens: maxTokens || 200,
-        messages: [{ role: "user", content: prompt }]
-      })
+      body: JSON.stringify({ prompt, maxTokens: maxTokens || 200 })
     });
     const data = await response.json();
     return (data.content || []).map(b => b.text || "").join("").trim();

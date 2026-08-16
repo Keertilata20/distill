@@ -4,26 +4,72 @@ A calm, focused document summary tool: bring a document, get it back as a
 TL;DR, key points, an abstract/summary, and a breakdown — no reading
 metaphors, no gamification, just the document distilled a few different ways.
 
-## Running it
+## Running it locally
 
-Open `index.html` directly — no build step, no server, no `npm install`.
-Every script is a plain classic `<script src="...">` tag (not an ES module),
-specifically so the whole thing works by double-clicking the file.
+You need the Vercel CLI for local testing, since `/api/distill.js` is a
+serverless function — it doesn't run just by opening `index.html` in a
+browser.
 
-**Except:** summary generation calls `api.anthropic.com` directly from the
-browser with no API key attached. That only succeeds when this page is
-rendered inside Claude.ai's artifact environment, which proxies the request.
-Opened anywhere else, every "Distill it" call will fail — uploading and
-browsing the library still work fine, but the four format tabs won't
-generate content. If you want this to work standalone, you'd need to add
-your own backend (or a serverless function) that holds an API key and
-proxies the request on the app's behalf.
+```
+npm install -g vercel
+cp .env.example .env        # then edit .env and add your real ANTHROPIC_API_KEY
+vercel dev
+```
+
+This serves the site with the API function live, usually at `http://localhost:3000`.
+
+## Deploying (GitHub + Vercel)
+
+1. **Push to GitHub**
+   ```
+   git init
+   git add .
+   git commit -m "Initial commit"
+   git remote add origin https://github.com/<you>/<repo>.git
+   git push -u origin main
+   ```
+   `.env` is already excluded via `.gitignore` — double check it never gets
+   committed. `.env.example` (no real key) is safe to commit.
+
+2. **Import into Vercel**
+   Go to [vercel.com/new](https://vercel.com/new), sign in with GitHub, and
+   import the repo. Vercel auto-detects the static files at the root and
+   the `/api` folder as serverless functions — no build configuration needed.
+
+3. **Add your API key**
+   In the Vercel project → Settings → Environment Variables, add:
+   ```
+   ANTHROPIC_API_KEY = sk-ant-...
+   ```
+   (from [console.anthropic.com](https://console.anthropic.com)). Redeploy
+   after adding it if the first deploy already ran.
+
+4. **Done** — Vercel gives you a live URL. Every "Distill it" call now goes
+   through your own `/api/distill` function, which is the only thing that
+   ever sees your real API key.
+
+**Before you share the link:** `/api/distill` is a public endpoint with no
+login in front of it. Anyone who finds your deployed URL can call it and
+spend your API credits — the function caps prompt length and output tokens
+per request, but that only bounds cost *per call*, not total volume. For a
+personal or demo project this is usually fine; if you're sharing the link
+widely, consider adding simple auth (e.g. a shared-secret header checked in
+`api/distill.js`) or Vercel's access-control features before it's public.
+
+*(Netlify works too, with the same idea — static site + one serverless
+function holding the key — just under `netlify/functions/` instead of
+`/api` with slightly different handler syntax.)*
 
 ## Structure
 
 ```
 distill/
 ├── index.html            markup only — no logic
+├── package.json          minimal — no dependencies, just repo metadata
+├── .gitignore             keeps .env and node_modules out of git
+├── .env.example           template for the local API key file (no real key)
+├── api/
+│   └── distill.js         serverless function — the ONLY thing holding your real API key
 ├── css/
 │   └── styles.css        every style, unchanged from the original build
 └── js/
@@ -31,7 +77,7 @@ distill/
     ├── textAnalysis.js     document classification, front-matter/heading
     │                        detection, paragraph chunking (pure functions)
     ├── fileExtract.js      pulls text out of PDF / DOCX / plain text files
-    ├── claudeApi.js         the API call + prompt construction per format tab
+    ├── claudeApi.js         calls our own /api/distill endpoint per format tab
     ├── storage.js           persistence (window.storage, with a fallback)
     ├── documents.js         turns raw text into a structured document object
     ├── libraryView.js       renders the home-screen document grid
@@ -74,6 +120,13 @@ its `<script>` tag in wherever its dependencies are already loaded.
   flags this with a caution banner when it detects heavy notation.
 - Front-matter (title/author) detection is heuristic, not guaranteed —
   unusual formatting may not separate cleanly.
-- The document library is stored per-user via `window.storage`; if that
-  API isn't available in your environment, documents persist only for the
-  current session.
+- The document library is stored per-user via `window.storage`, which is
+  specific to Claude.ai's artifact environment. Deployed standalone (as
+  described above), that API won't exist, so the app automatically falls
+  back to in-memory storage — your library persists for the browser tab's
+  session but won't survive a page reload. If you want real persistence
+  after deploying, swap `js/storage.js` for calls to a database (e.g.
+  Vercel KV, Supabase, or similar) — everything else is already decoupled
+  from *how* documents are stored.
+- `/api/distill.js` has no authentication in front of it — see the
+  "before you share the link" note above.

@@ -15,7 +15,6 @@
 window.App = {
   config: {
     WPM: 200,                          // words-per-minute, for read-time estimates
-    MODEL: 'claude-sonnet-4-6',
     STORAGE_KEY: 'distill-documents',
     PDF_WORKER_SRC: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'
   },
